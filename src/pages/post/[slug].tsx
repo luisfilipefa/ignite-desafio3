@@ -1,4 +1,7 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
+import Head from 'next/head';
+import Prismic from '@prismicio/client';
+import { RichText } from 'prismic-dom';
 
 import { getPrismicClient } from '../../services/prismic';
 
@@ -26,20 +29,62 @@ interface PostProps {
   post: Post;
 }
 
-// export default function Post() {
-//   // TODO
-// }
+export default function Post({ post }): JSX.Element {
+  // TODO
+  return (
+    <>
+      <Head>
+        <title>{post.data.title} | Spacetraveling</title>
+      </Head>
 
-// export const getStaticPaths = async () => {
-//   const prismic = getPrismicClient();
-//   const posts = await prismic.query(TODO);
+      <main className={commonStyles.container}>
+        <article className={styles.post}>
+          <h1>{post.data.title}</h1>
+          <time>{post.first_publication_date}</time>
+          <div
+            className={styles.postContent}
+            dangerouslySetInnerHTML={{
+              __html: RichText.asHtml(post.data.content),
+            }}
+          />
+        </article>
+      </main>
+    </>
+  );
+}
 
-//   // TODO
-// };
+export const getStaticPaths: GetStaticPaths = async () => {
+  const prismic = getPrismicClient();
+  const posts = await prismic.query(
+    Prismic.predicates.at('document.type', 'posts'),
+    {}
+  );
 
-// export const getStaticProps = async context => {
-//   const prismic = getPrismicClient();
-//   const response = await prismic.getByUID(TODO);
+  // TODO
+  return {
+    paths: [{ params: { slug: posts.results[0].uid } }],
+    fallback: true,
+  };
+};
 
-//   // TODO
-// };
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  const { slug } = params;
+
+  const prismic = getPrismicClient();
+  const response = await prismic.getByUID('posts', String(slug), {});
+
+  const post = {
+    first_publication_date: response.first_publication_date,
+    data: {
+      title: response.data.title,
+      banner: {
+        url: response.data.banner.url,
+      },
+      author: response.data.author,
+      content: RichText.asText(response.data.content),
+    },
+  };
+
+  // TODO
+  return { props: { post } };
+};
