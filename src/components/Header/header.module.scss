@@ -1,1 +1,15 @@
 // TODO
+// [x] Fazer com que o container geral tenha 6rem
+// [x] Fazer com que a div que cerca a imagem ocupe 100% da largura e altura
+// [x] Fazer com que a imagem fique centralizada verticalmente
+
+.container {
+  height: 6rem;
+}
+
+.content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
