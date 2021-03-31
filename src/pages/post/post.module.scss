@@ -1,6 +1,73 @@
 // TODO
-.post {
+.headerContainer {
+  div:first-child {
+    max-width: 1440px;
+    height: 400px;
+    width: 100%;
+
+    margin-bottom: 3rem;
+
+    img {
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 3.625rem;
+    color: var(--title);
+
+    text-align: center;
+  }
+
+  .infoContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 3rem;
+
+    p {
+      font-size: 0.875rem;
+      font-weight: 400;
+      line-height: 1.062rem;
+      color: var(--info);
+
+      margin-top: 1rem;
+    }
+
+    p:last-child {
+      margin-left: 1rem;
+    }
+
+    svg {
+      margin-right: 0.3rem;
+    }
+  }
 }
 
-.postContent {
+.post {
+  text-align: justify;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--title);
+    text-align: center;
+
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1.125rem;
+    font-weight: 400;
+    line-height: 1.562rem;
+
+    margin-bottom: 0.5rem;
+  }
 }

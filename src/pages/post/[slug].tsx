@@ -2,6 +2,10 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import Prismic from '@prismicio/client';
 import { RichText } from 'prismic-dom';
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
+
+import { FiUser, FiCalendar } from 'react-icons/fi';
 
 import { getPrismicClient } from '../../services/prismic';
 
@@ -29,7 +33,7 @@ interface PostProps {
   post: Post;
 }
 
-export default function Post({ post }): JSX.Element {
+export default function Post({ post }: PostProps): JSX.Element {
   // TODO
   return (
     <>
@@ -37,14 +41,35 @@ export default function Post({ post }): JSX.Element {
         <title>{post.data.title} | Spacetraveling</title>
       </Head>
 
+      <header className={styles.headerContainer}>
+        <div>
+          <img src={post.data.banner.url} alt="banner" />
+        </div>
+        <h1>{post.data.title}</h1>
+        <div className={`${commonStyles.container} ${styles.infoContainer}`}>
+          <p>
+            <FiCalendar />
+            {format(new Date(post.first_publication_date), 'dd MMM yyyy', {
+              locale: ptBR,
+            })}
+          </p>
+          <p>
+            <FiUser />
+            {post.data.author}
+          </p>
+        </div>
+      </header>
+
       <main className={commonStyles.container}>
         <article className={styles.post}>
-          <h1>{post.data.title}</h1>
-          <time>{post.first_publication_date}</time>
-          <div
-            className={styles.postContent}
+          <h2
             dangerouslySetInnerHTML={{
-              __html: RichText.asHtml(post.data.content),
+              __html: post.data.content[0].heading,
+            }}
+          />
+          <div
+            dangerouslySetInnerHTML={{
+              __html: RichText.asHtml(post.data.content[0].body[0].text),
             }}
           />
         </article>
@@ -73,7 +98,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const prismic = getPrismicClient();
   const response = await prismic.getByUID('posts', String(slug), {});
 
-  const post = {
+  const post: Post = {
     first_publication_date: response.first_publication_date,
     data: {
       title: response.data.title,
@@ -81,7 +106,16 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
         url: response.data.banner.url,
       },
       author: response.data.author,
-      content: RichText.asText(response.data.content),
+      content: [
+        {
+          heading: response.data.content[0].heading,
+          body: [
+            {
+              text: response.data.content[0].body,
+            },
+          ],
+        },
+      ],
     },
   };
 
