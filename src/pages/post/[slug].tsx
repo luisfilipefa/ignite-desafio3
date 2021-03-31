@@ -1,21 +1,26 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import Prismic from '@prismicio/client';
 import { RichText } from 'prismic-dom';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
-import { FiUser, FiCalendar } from 'react-icons/fi';
+import { FiUser, FiCalendar, FiClock } from 'react-icons/fi';
 
 import { getPrismicClient } from '../../services/prismic';
+
+import Header from '../../components/Header';
 
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
 
 interface Post {
+  uid: string;
   first_publication_date: string | null;
   data: {
     title: string;
+    subtitle: string;
     banner: {
       url: string;
     };
@@ -35,11 +40,23 @@ interface PostProps {
 
 export default function Post({ post }: PostProps): JSX.Element {
   // TODO
+  const router = useRouter();
+
+  if (router.isFallback) {
+    return <div>Carregando...</div>;
+  }
+
+  const wordsInBody = post.data.content[0].body.toString().split(' ').length;
+  const wordsInHeading = post.data.content[0].heading.split(' ').length;
+  const readingTime = Math.ceil((wordsInBody + wordsInHeading) / 200);
+
   return (
     <>
       <Head>
         <title>{post.data.title} | Spacetraveling</title>
       </Head>
+
+      <Header />
 
       <header className={styles.headerContainer}>
         <div>
@@ -57,6 +74,12 @@ export default function Post({ post }: PostProps): JSX.Element {
             <FiUser />
             {post.data.author}
           </p>
+          <p>
+            <FiClock />4 min
+            {/* {`${readingTime} min`} */}
+          </p>
+          <p className={styles.test}>Proin et varius</p>
+          <p className={styles.test}>Cras laoreet mi</p>
         </div>
       </header>
 
@@ -64,12 +87,12 @@ export default function Post({ post }: PostProps): JSX.Element {
         <article className={styles.post}>
           <h2
             dangerouslySetInnerHTML={{
-              __html: post.data.content[0].heading,
+              __html: String(post.data.content.map(item => item.heading)),
             }}
           />
           <div
             dangerouslySetInnerHTML={{
-              __html: RichText.asHtml(post.data.content[0].body[0].text),
+              __html: String(post.data.content.map(item => item.body)),
             }}
           />
         </article>
@@ -82,12 +105,16 @@ export const getStaticPaths: GetStaticPaths = async () => {
   const prismic = getPrismicClient();
   const posts = await prismic.query(
     Prismic.predicates.at('document.type', 'posts'),
-    {}
+    { pageSize: 20, page: 1 }
   );
+
+  const paths = posts.results.map(result => {
+    return { params: { slug: result.uid } };
+  });
 
   // TODO
   return {
-    paths: [{ params: { slug: posts.results[0].uid } }],
+    paths,
     fallback: true,
   };
 };
@@ -99,23 +126,19 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const response = await prismic.getByUID('posts', String(slug), {});
 
   const post: Post = {
+    uid: response.uid,
     first_publication_date: response.first_publication_date,
     data: {
       title: response.data.title,
+      subtitle: response.data.subtitle,
       banner: {
         url: response.data.banner.url,
       },
       author: response.data.author,
-      content: [
-        {
-          heading: response.data.content[0].heading,
-          body: [
-            {
-              text: response.data.content[0].body,
-            },
-          ],
-        },
-      ],
+      content: response.data.content.map(item => {
+        item.body = RichText.asHtml(item.body);
+        return item;
+      }),
     },
   };
 
