@@ -9,8 +9,6 @@ import { FiUser, FiCalendar } from 'react-icons/fi';
 
 import { getPrismicClient } from '../services/prismic';
 
-import Header from '../components/Header';
-
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
 
@@ -62,7 +60,6 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
 
   return (
     <>
-      <Header />
       <main className={commonStyles.container}>
         <div className={styles.posts}>
           {posts.map(post => {

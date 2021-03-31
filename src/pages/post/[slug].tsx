@@ -10,8 +10,6 @@ import { FiUser, FiCalendar, FiClock } from 'react-icons/fi';
 
 import { getPrismicClient } from '../../services/prismic';
 
-import Header from '../../components/Header';
-
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
 
@@ -56,8 +54,6 @@ export default function Post({ post }: PostProps): JSX.Element {
         <title>{post.data.title} | Spacetraveling</title>
       </Head>
 
-      <Header />
-
       <header className={styles.headerContainer}>
         <div>
           <img src={post.data.banner.url} alt="banner" />
@@ -75,8 +71,8 @@ export default function Post({ post }: PostProps): JSX.Element {
             {post.data.author}
           </p>
           <p>
-            <FiClock />4 min
-            {/* {`${readingTime} min`} */}
+            <FiClock />
+            {`${readingTime} min`}
           </p>
           <p className={styles.test}>Proin et varius</p>
           <p className={styles.test}>Cras laoreet mi</p>
