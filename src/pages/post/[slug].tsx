@@ -1,5 +1,6 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Prismic from '@prismicio/client';
 import { RichText } from 'prismic-dom';
@@ -34,9 +35,10 @@ interface Post {
 
 interface PostProps {
   post: Post;
+  preview: boolean;
 }
 
-export default function Post({ post }: PostProps): JSX.Element {
+export default function Post({ post, preview }: PostProps): JSX.Element {
   // TODO
   const router = useRouter();
 
@@ -52,6 +54,11 @@ export default function Post({ post }: PostProps): JSX.Element {
     <>
       <Head>
         <title>{post.data.title} | Spacetraveling</title>
+        <script
+          async
+          defer
+          src="https://static.cdn.prismic.io/prismic.js?new=true&repo=ignite-desafio3"
+        />
       </Head>
 
       <header className={styles.headerContainer}>
@@ -93,6 +100,15 @@ export default function Post({ post }: PostProps): JSX.Element {
           />
         </article>
       </main>
+      <div className={commonStyles.exitPreviewLink}>
+        {!preview ? (
+          ''
+        ) : (
+          <Link href="/api/exit-preview">
+            <a>Sair do modo preview</a>
+          </Link>
+        )}
+      </div>
     </>
   );
 }
@@ -115,11 +131,17 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getStaticProps: GetStaticProps = async ({
+  params,
+  preview = false,
+  previewData,
+}) => {
   const { slug } = params;
 
   const prismic = getPrismicClient();
-  const response = await prismic.getByUID('posts', String(slug), {});
+  const response = await prismic.getByUID('posts', String(slug), {
+    ref: previewData ? previewData.ref : null,
+  });
 
   const post: Post = {
     uid: response.uid,
@@ -139,5 +161,5 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   };
 
   // TODO
-  return { props: { post } };
+  return { props: { post, preview } };
 };
