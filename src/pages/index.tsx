@@ -1,5 +1,6 @@
 import { GetStaticProps } from 'next';
 import Link from 'next/link';
+import Head from 'next/head';
 import Prismic from '@prismicio/client';
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
@@ -29,9 +30,13 @@ interface PostPagination {
 
 interface HomeProps {
   postsPagination: PostPagination;
+  preview: boolean;
 }
 
-export default function Home({ postsPagination }: HomeProps): JSX.Element {
+export default function Home({
+  postsPagination,
+  preview,
+}: HomeProps): JSX.Element {
   // TODO
   // [x] Armazenar posts num estado
   // [x] Armazenar o valor de next_page num estado
@@ -60,6 +65,13 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
 
   return (
     <>
+      <Head>
+        <script
+          async
+          defer
+          src="https://static.cdn.prismic.io/prismic.js?new=true&repo=ignite-desafio3"
+        />
+      </Head>
       <main className={commonStyles.container}>
         <div className={styles.posts}>
           {posts.map(post => {
@@ -101,15 +113,28 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
           </button>
         )}
       </main>
+      <div className={commonStyles.exitPreviewLink}>
+        {!preview ? (
+          ''
+        ) : (
+          <Link href="/api/exit-preview">
+            <a>Sair do modo preview</a>
+          </Link>
+        )}
+      </div>
     </>
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps<HomeProps> = async ({
+  preview = false,
+  previewData,
+}) => {
   const prismic = getPrismicClient();
   const postsResponse = await prismic.query(
     Prismic.predicates.at('document.type', 'posts'),
     {
+      ref: previewData ? previewData.ref : null,
       pageSize: 1,
       page: 1,
       fetchLinks: [
@@ -144,5 +169,5 @@ export const getStaticProps: GetStaticProps = async () => {
   // [x] Criar um novo objeto contendo os results (posts) e a next_page (string)
   // [x] Retornar objeto nas props
 
-  return { props: { postsPagination }, revalidate: 60 * 60 * 24 };
+  return { props: { postsPagination, preview }, revalidate: 60 * 60 * 24 };
 };
