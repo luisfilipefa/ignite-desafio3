@@ -1,0 +1,14 @@
+.exitPreviewLink {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin: 3rem 0;
+
+  a {
+    padding: 1rem 3rem;
+    background: var(--highlight);
+    color: var(--title);
+    font-weight: 600;
+    border-radius: 1rem;
+  }
+}

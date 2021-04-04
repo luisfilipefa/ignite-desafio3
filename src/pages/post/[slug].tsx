@@ -1,56 +1,13 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
-import Head from 'next/head';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Prismic from '@prismicio/client';
 import { RichText } from 'prismic-dom';
-import { format } from 'date-fns';
-import ptBR from 'date-fns/locale/pt-BR';
-
-import { FiUser, FiCalendar, FiClock } from 'react-icons/fi';
 
 import { getPrismicClient } from '../../services/prismic';
+import Article from '../../components/Article';
+import { ArticleProps, PostProps } from '../../types';
 
-import commonStyles from '../../styles/common.module.scss';
-import styles from './post.module.scss';
-
-interface Post {
-  uid: string;
-  first_publication_date: string | null;
-  last_publication_date: string | null;
-  data: {
-    title: string;
-    subtitle: string;
-    banner: {
-      url: string;
-    };
-    author: string;
-    content: {
-      heading: string;
-      body: {
-        text: string;
-      }[];
-    }[];
-  };
-}
-
-interface NavPost {
-  uid: string;
-  title: string;
-}
-interface PostProps {
-  post: Post;
-  prevPost: NavPost;
-  nextPost: NavPost;
-  preview: boolean;
-}
-
-export default function Post({
-  post,
-  prevPost,
-  nextPost,
-  preview,
-}: PostProps): JSX.Element {
+export default function Post({ post, preview }: ArticleProps): JSX.Element {
   // TODO
   const router = useRouter();
 
@@ -58,99 +15,9 @@ export default function Post({
     return <div>Carregando...</div>;
   }
 
-  const wordsInBody = post.data.content[0].body.toString().split(' ').length;
-  const wordsInHeading = post.data.content[0].heading.split(' ').length;
-  const readingTime = Math.ceil((wordsInBody + wordsInHeading) / 200);
-
   return (
     <>
-      <Head>
-        <title>{post.data.title} | Spacetraveling</title>
-        <script
-          async
-          defer
-          src="https://static.cdn.prismic.io/prismic.js?new=true&repo=ignite-desafio3"
-        />
-      </Head>
-
-      <header className={styles.headerContainer}>
-        <div>
-          <img src={post.data.banner.url} alt="banner" />
-        </div>
-        <h1>{post.data.title}</h1>
-        <div className={`${commonStyles.container} ${styles.infoContainer}`}>
-          <p>
-            <FiCalendar />
-            {format(new Date(post.first_publication_date), 'dd MMM yyyy', {
-              locale: ptBR,
-            })}
-          </p>
-          <p>
-            <FiUser />
-            {post.data.author}
-          </p>
-          <p>
-            <FiClock />
-            {`${readingTime} min`}
-          </p>
-          <p>
-            * editado em{' '}
-            {format(
-              new Date(post.last_publication_date),
-              'dd MMM yyyy, HH:MM',
-              {
-                locale: ptBR,
-              }
-            )}
-          </p>
-        </div>
-      </header>
-
-      <main className={commonStyles.container}>
-        <article className={styles.post}>
-          <h2
-            dangerouslySetInnerHTML={{
-              __html: String(post.data.content.map(item => item.heading)),
-            }}
-          />
-          <div
-            dangerouslySetInnerHTML={{
-              __html: String(post.data.content.map(item => item.body)),
-            }}
-          />
-        </article>
-        {prevPost || nextPost ? (
-          <div className={styles.navPosts}>
-            {prevPost && prevPost.uid !== post.uid && (
-              <div>
-                <p>{prevPost.title}</p>{' '}
-                <Link href={`/post/${prevPost.uid}`}>
-                  <a>Post anterior</a>
-                </Link>
-              </div>
-            )}
-            {nextPost && nextPost.uid !== post.uid && (
-              <div>
-                <p>{nextPost.title}</p>{' '}
-                <Link href={`/post/${nextPost.uid}`}>
-                  <a>Post seguinte</a>
-                </Link>
-              </div>
-            )}
-          </div>
-        ) : (
-          ''
-        )}
-      </main>
-      <div className={commonStyles.exitPreviewLink}>
-        {!preview ? (
-          ''
-        ) : (
-          <Link href="/api/exit-preview">
-            <a>Sair do modo preview</a>
-          </Link>
-        )}
-      </div>
+      <Article post={post} preview={preview} />
     </>
   );
 }
@@ -221,10 +88,12 @@ export const getStaticProps: GetStaticProps = async ({
           title: nextResponse.results[0].data.title,
         };
 
-  const post: Post = {
+  const post: PostProps = {
     uid: response.uid,
     first_publication_date: response.first_publication_date,
     last_publication_date: response.last_publication_date,
+    prev_post: prevPost,
+    next_post: nextPost,
     data: {
       title: response.data.title,
       subtitle: response.data.subtitle,
@@ -240,5 +109,5 @@ export const getStaticProps: GetStaticProps = async ({
   };
 
   // TODO
-  return { props: { post, prevPost, nextPost, preview } };
+  return { props: { post, preview } };
 };
