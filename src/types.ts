@@ -40,7 +40,7 @@ export interface ArticleHeaderProps {
   banner_url: string;
   first_publication_date: string;
   last_publication_date: string;
-  content_size: number;
+  readingTime: string;
 }
 
 export interface ArticleNavProps {

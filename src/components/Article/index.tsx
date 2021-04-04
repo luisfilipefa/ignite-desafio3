@@ -10,13 +10,15 @@ import ArticleNav from './ArticleNav';
 import Utterances from './Utterances';
 
 const Article = ({ post, preview }: ArticleProps): JSX.Element => {
-  const [contentSize, setContentSize] = useState(0);
+  const [readingTime, setReadingTime] = useState(0);
 
   useEffect(() => {
     const wordsInBody = post.data.content[0].body.toString().split(' ').length;
     const wordsInHeading = post.data.content[0].heading.split(' ').length;
 
-    setContentSize(wordsInBody + wordsInHeading);
+    const formattedTime = Math.ceil((wordsInBody + wordsInHeading) / 200)
+
+    setReadingTime(formattedTime);
   }, []);
 
   return (
@@ -36,7 +38,7 @@ const Article = ({ post, preview }: ArticleProps): JSX.Element => {
         banner_url={post.data.banner.url}
         first_publication_date={post.first_publication_date}
         last_publication_date={post.last_publication_date}
-        content_size={contentSize}
+        readingTime={String(readingTime)}
       />
 
       <main className={commonStyles.container}>

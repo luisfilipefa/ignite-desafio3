@@ -13,20 +13,8 @@ const ArticleHeader = ({
   banner_url,
   first_publication_date,
   last_publication_date,
-  content_size,
+  readingTime,
 }: ArticleHeaderProps): JSX.Element => {
-  const [readingTime, setReadingTime] = useState(0);
-
-  useEffect(() => {
-    const calcReadingTime = (): number => {
-      const totalTime = Math.ceil(content_size / 200);
-
-      return totalTime;
-    };
-
-    setReadingTime(calcReadingTime());
-  }, []);
-
   return (
     <header className={styles.headerContainer}>
       <div>
