@@ -26,7 +26,7 @@ export interface PostProps {
 }
 
 export interface ArticleProps {
-  post: Post;
+  post: PostProps;
   preview: boolean;
 }
 

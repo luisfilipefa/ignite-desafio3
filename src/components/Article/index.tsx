@@ -7,6 +7,7 @@ import { ArticleProps } from '../../types';
 import Preview from '../Preview';
 import ArticleHeader from './ArticleHeader';
 import ArticleNav from './ArticleNav';
+import Utterances from './Utterances';
 
 const Article = ({ post, preview }: ArticleProps): JSX.Element => {
   const [contentSize, setContentSize] = useState(0);
@@ -58,6 +59,10 @@ const Article = ({ post, preview }: ArticleProps): JSX.Element => {
           next_post={post.next_post}
         />
       </main>
+
+      <section id="posts-section">
+        <Utterances />
+      </section>
 
       <Preview preview={preview} />
     </>
