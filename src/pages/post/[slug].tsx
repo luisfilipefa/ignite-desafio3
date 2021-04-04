@@ -34,12 +34,23 @@ interface Post {
   };
 }
 
+interface NavPost {
+  uid: string;
+  title: string;
+}
 interface PostProps {
   post: Post;
+  prevPost: NavPost;
+  nextPost: NavPost;
   preview: boolean;
 }
 
-export default function Post({ post, preview }: PostProps): JSX.Element {
+export default function Post({
+  post,
+  prevPost,
+  nextPost,
+  preview,
+}: PostProps): JSX.Element {
   // TODO
   const router = useRouter();
 
@@ -82,7 +93,16 @@ export default function Post({ post, preview }: PostProps): JSX.Element {
             <FiClock />
             {`${readingTime} min`}
           </p>
-          <p>Editado em: {post.last_publication_date}</p>
+          <p>
+            * editado em{' '}
+            {format(
+              new Date(post.last_publication_date),
+              'dd MMM yyyy, HH:MM',
+              {
+                locale: ptBR,
+              }
+            )}
+          </p>
         </div>
       </header>
 
@@ -99,6 +119,28 @@ export default function Post({ post, preview }: PostProps): JSX.Element {
             }}
           />
         </article>
+        {prevPost || nextPost ? (
+          <div className={styles.navPosts}>
+            {prevPost && prevPost.uid !== post.uid && (
+              <div>
+                <p>{prevPost.title}</p>{' '}
+                <Link href={`/post/${prevPost.uid}`}>
+                  <a>Post anterior</a>
+                </Link>
+              </div>
+            )}
+            {nextPost && nextPost.uid !== post.uid && (
+              <div>
+                <p>{nextPost.title}</p>{' '}
+                <Link href={`/post/${nextPost.uid}`}>
+                  <a>Post seguinte</a>
+                </Link>
+              </div>
+            )}
+          </div>
+        ) : (
+          ''
+        )}
       </main>
       <div className={commonStyles.exitPreviewLink}>
         {!preview ? (
@@ -117,7 +159,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
   const prismic = getPrismicClient();
   const posts = await prismic.query(
     Prismic.predicates.at('document.type', 'posts'),
-    { pageSize: 20, page: 1 }
+    { pageSize: 20 }
   );
 
   const paths = posts.results.map(result => {
@@ -143,6 +185,42 @@ export const getStaticProps: GetStaticProps = async ({
     ref: previewData ? previewData.ref : null,
   });
 
+  const prevResponse = await prismic.query(
+    Prismic.predicates.at('document.type', 'posts'),
+    {
+      pageSize: 1,
+      after: response.id,
+      orderings: '[document.first_publication_date desc]',
+      fetch: ['posts.uid', 'posts.title'],
+    }
+  );
+
+  const nextResponse = await prismic.query(
+    Prismic.predicates.at('document.type', 'posts'),
+    {
+      pageSize: 1,
+      after: response.id,
+      orderings: '[document.first_publication_date]',
+      fetch: ['posts.uid', 'posts.title'],
+    }
+  );
+
+  const prevPost =
+    typeof prevResponse.results[0] === 'undefined'
+      ? null
+      : {
+          uid: prevResponse.results[0].uid,
+          title: prevResponse.results[0].data.title,
+        };
+
+  const nextPost =
+    typeof nextResponse.results[0] === 'undefined'
+      ? null
+      : {
+          uid: nextResponse.results[0].uid,
+          title: nextResponse.results[0].data.title,
+        };
+
   const post: Post = {
     uid: response.uid,
     first_publication_date: response.first_publication_date,
@@ -162,5 +240,5 @@ export const getStaticProps: GetStaticProps = async ({
   };
 
   // TODO
-  return { props: { post, preview } };
+  return { props: { post, prevPost, nextPost, preview } };
 };

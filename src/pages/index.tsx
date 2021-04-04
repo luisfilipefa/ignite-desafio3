@@ -58,7 +58,9 @@ export default function Home({
   const handleClick = async (): Promise<void> => {
     // ! Search alternative method to fetch the page withou passing the access token
     const response = await fetch(
-      `${next_page}&access_token=${process.env.NEXT_PUBLIC_PRISMIC_ACCESS_TOKEN}`
+      `${urlNextPage}&access_token=${String(
+        process.env.NEXT_PUBLIC_PRISMIC_ACCESS_TOKEN
+      )}`
     );
     const data = await response.json();
 
@@ -147,6 +149,7 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({
         'posts.data.subtitle',
         'posts.data.author',
       ],
+      orderings: '[document.first_publication_date]',
     }
   );
 
